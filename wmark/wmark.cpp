@@ -18,7 +18,7 @@
 #include <io.h>
 #include <Windows.h>
 #include <sysinfoapi.h>
-
+bool getpages(std::wstring filename);
 
 
 
@@ -36,6 +36,7 @@ void usage() {
 	printf("\t-c 水印颜色(例:green)\n");
 	printf("\t-t 旋转角度(例:45)\n");
 	printf("\t-t 水印字体(例:simkai、simhei、simli、simfang)\n");
+	printf("\t-s 获取文件总页数\n");
 }
 
 
@@ -64,6 +65,7 @@ std::string char2string( char*  c) {
 	string str=c;
 	return str;
 }
+wstring pageName ;
 int main(int argc, char *argv[])
 
 {
@@ -76,10 +78,11 @@ int main(int argc, char *argv[])
 	wstring mark_rotate = L"45";
 	wstring mark_font = L"simkai";
 	
+	
 	int ch;
 	//printf("\n\n");
 	//printf("optind:%d，opterr：%d\n", optind, opterr);
-	while ((ch = getopt(argc, argv, "i:o:t:p:c:r:f:h")) != -1)
+	while ((ch = getopt(argc, argv, "i:o:t:p:c:r:f:s:h")) != -1)
 	{
 		//printf("optind: %d\n", optind);
 		switch (ch)
@@ -112,6 +115,12 @@ int main(int argc, char *argv[])
 			//printf("The argument of -f is %s\n\n", optarg);
 			mark_font = String2WString(char2string(optarg));
 			break;
+		case 's':
+			//printf("The argument of -f is %s\n\n", optarg);
+			getpages(String2WString(optarg));
+			exit(0);
+			//	getpages;
+			exit(0);
 		case 'h':
 			usage();
 			exit(0);
@@ -239,7 +248,7 @@ int main(int argc, char *argv[])
 
 			p.end_page_ext(L"");
 		}
-
+		
 		p.end_document(L"");
 
 	}
@@ -252,6 +261,53 @@ int main(int argc, char *argv[])
 			<< L": " << L"错误的参数选项请使用 - h参数查看帮助" << endl;
 		return 2;
 	}
+
+
+
 	return 0;
 
 }
+// 获取文件总页数
+bool getpages(wstring filename)
+{
+	PDFlib m_oPDF;
+	try
+	{
+
+		//打开源pdf文件获取实例id
+		//pageName = String2WString(char2string(optarg));
+		int nSrcPDFID = m_oPDF.open_pdi_document(filename, L"");
+		if (nSrcPDFID == -1)
+		{
+			printf(u8"##打开源pdf文件失败!");
+			return false;
+		}
+		//m_oPDF.set_option(L"searchpath={{ print_cache }}");//设置默认路径
+
+		//根据SrcPDF实例id获取pdf中的信息
+		int endpage = (int)m_oPDF.pcos_get_number(nSrcPDFID, L"length:pages");//总页数
+		auto fWidth = (m_oPDF.pcos_get_number(nSrcPDFID, L"pages[0]/width"));//宽度595
+		auto fHeight = m_oPDF.pcos_get_number(nSrcPDFID, L"pages[0]/height");//高度842
+
+		//printf("%d", endpage);
+		cout << endpage << endl;
+
+		//		m_oPDF.close_font(font);
+		m_oPDF.close_pdi_document(nSrcPDFID);
+	
+
+		return true;
+	}
+	catch (PDFlib::Exception& e)
+	{
+		//输出pdflib异常信息
+		wprintf(m_oPDF.get_errmsg().c_str());
+		return false;
+	}
+	catch (...)
+	{
+		//其他异常
+		return false;
+	}
+}
+

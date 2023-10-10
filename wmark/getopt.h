@@ -71,7 +71,6 @@
 #include <stdio.h>                  /* for EOF */
 #include <string.h>                 /* for strchr() */
 
-
   /* static (global) variables that are specified as exported by getopt() */
 char* optarg = NULL;    /* pointer to the start of the option argument  */
 int   optind = 1;       /* number of the next argv[] to be evaluated    */
